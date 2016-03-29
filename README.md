@@ -65,11 +65,11 @@
 
 ## 项目结构 我的构建原则
 
-a.log日志文件必须放在一起
-b.config 配置文件需要分别放,跟着组件走
-c.php-fpm nginx redis mysql 分别使用docker容器,各用各的,这样方便随时使用或者更换需要的
-d.项目放在 可以自定义的 目录下,具体位置可以自行配置
-e.mysql的数据文件要单独出来,防止摧毁docker后数据库也要重建,放data目录
-f.composer 必须得有啊,还要想办法和命令行引出来用.
-g.使用Ubuntu系统
+	a.log日志文件必须放在一起
+	b.config 配置文件需要分别放,跟着组件走
+	c.php-fpm nginx redis mysql 分别使用docker容器,各用各的,这样方便随时使用或者更换需要的
+	d.项目放在 可以自定义的 目录下,具体位置可以自行配置
+	e.mysql的数据文件要单独出来,防止摧毁docker后数据库也要重建,放data目录
+	f.composer 必须得有啊,还要想办法和命令行引出来用.
+	g.使用Ubuntu系统
 
