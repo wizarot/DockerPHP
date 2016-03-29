@@ -73,3 +73,35 @@
 	f.composer 必须得有啊,还要想办法和命令行引出来用.
 	g.使用Ubuntu系统
 
+最后就弄成这样的结构:
+
+DockerPHP
+├── README.md
+├── beanstalkd
+│   └── Dockerfile		可以选择的beanstalkd 队列
+├── data 				数据库文件
+├── debian
+│   └── Dockerfile 		docker的基础系统
+├── docker-compose.yml  docker-compose 主要配置文件
+├── logs 				日志文件
+│   └── nginx
+├── mysql 				mysql组件
+│   └── Dockerfile
+├── nginx 				nginx组件及配置
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   ├── php54
+│   ├── php56 			使用php56的项目虚拟目录配置,可以看下里面的例子就明白了
+│   └── php70
+├── php-project-path
+│   └── hello_app 		这里有个例子的项目.php项目可以放DockerPHP下面,也可以放外面任何需要的地方. 详细可以配置docker-compose.yml
+├── php56
+│   ├── Dockerfile
+│   ├── app.ini 		php.ini 中,你不满意的配置都可以在这里修改,改完重启docker就行了
+│   └── php-fpm.conf
+└── redis 				Redis也一样,使用时不用ip,只需要写名字 redis:6379 就能在项目里访问到了!
+    └── Dockerfile
+
+## 配置还是要说一点的
+
+项目里使用Mysql 不需要写服务器ip什么的,直接填 mysql 就行. 其它类似~
