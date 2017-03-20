@@ -1,4 +1,4 @@
-#  基于Docker容器化的PHP开发环境
+#  基于Docker容器化的PHP开发环境(docker1.0旧版本)
 
 ---
 
