@@ -1,0 +1,53 @@
+app:
+  build: debian
+  # tty: true
+  volumes:
+    - ./php-project-path:/apps
+
+mysql:
+  build: mysql
+  ports:
+    - 3306:3306
+  environment:
+    MYSQL_ROOT_PASSWORD: root
+    MYSQL_DATABASE: apps
+    MYSQL_USER: root
+    MYSQL_PASSWORD: root
+  volumes:
+    - ./data:/var/lib/mysql
+
+redis:
+  image: redis
+  ports:
+    - 6379:6379
+
+# beanstalkd:
+#   build: beanstalkd
+#   ports: 
+#     - 11300:11300
+
+php56:
+  build: php56
+  volumes:
+    - ./php56/app.ini:/usr/local/etc/php/conf.d/app.ini
+    - ./php56/php-fpm.conf:/etc/php-fpm.conf
+  links:
+    - mysql
+    - redis
+    # - beanstalkd
+  volumes_from:
+    - app
+
+nginx:
+  image: nginx
+  ports:
+    - 80:80
+    - 443:443
+  volumes:
+    - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    - ./nginx/php56:/etc/nginx/conf.d/php56
+    - ./logs/nginx:/var/log/nginx
+  links:
+    - php56
+  volumes_from:
+    - app

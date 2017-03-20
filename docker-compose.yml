@@ -1,53 +1,49 @@
-app:
-  build: debian
-  # tty: true
-  volumes:
-    - ./php-project-path:/apps
+version: '2'
 
-mysql:
-  build: mysql
-  ports:
-    - 3306:3306
-  environment:
-    MYSQL_ROOT_PASSWORD: root
-    MYSQL_DATABASE: apps
-    MYSQL_USER: root
-    MYSQL_PASSWORD: root
-  volumes:
-    - ./data:/var/lib/mysql
-
-redis:
-  image: redis
-  ports:
-    - 6379:6379
-
-# beanstalkd:
-#   build: beanstalkd
-#   ports: 
-#     - 11300:11300
-
-php56:
-  build: php56
-  volumes:
-    - ./php56/app.ini:/usr/local/etc/php/conf.d/app.ini
-    - ./php56/php-fpm.conf:/etc/php-fpm.conf
-  links:
-    - mysql
-    - redis
-    # - beanstalkd
-  volumes_from:
-    - app
-
-nginx:
-  image: nginx
-  ports:
-    - 80:80
-    - 443:443
-  volumes:
-    - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    - ./nginx/php56:/etc/nginx/conf.d/php56
-    - ./logs/nginx:/var/log/nginx
-  links:
-    - php56
-  volumes_from:
-    - app
+# 可以复制一个文件到 docker-compose.override.yml 覆盖需要对应的选项
+services:
+  # treafik代理,没有nginx那样的rewrite配置,但可以简单代理到端口
+  proxy:
+    image: traefik
+    command: --web --docker --docker.domain=l.wizmacau.com #公司的开发域名结尾,以这个结尾的都会被解析至本机
+    restart: always
+    networks:
+      - webgateway
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /dev/null:/traefik.toml
+  whoami:
+    image: emilevauge/whoami
+    networks:
+      - webgateway
+    labels:
+      - "traefik.backend=whoami"
+      - "traefik.frontend.rule=Host:whoami.l.wizmacau.com" #使用traefik解析配置的whoami
+  admin:
+    image: portainer/portainer
+    command: -H unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "traefik.port=9000"
+      - "traefik.backend=admin"
+      - "traefik.frontend.rule=Host:admin.l.wizmacau.com"
+    networks:
+      - webgateway
+  dash:
+    image: svendowideit/ambassador
+    links: 
+      - proxy
+    labels:
+      - "traefik.port=8080"
+      - "traefik.backend=dash"
+      - "traefik.frontend.rule=Host:dash.l.wizmacau.com"
+    environment: 
+      - DASH_PORT_8080_TCP=tcp://proxy:8080
+    networks:
+      - webgateway
+networks:
+  webgateway:
+    driver: bridge

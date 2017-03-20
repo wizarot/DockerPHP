@@ -1,0 +1,56 @@
+version: '2'
+services:
+  nginx:
+    image: containerize/nginx
+    labels:
+      - "traefik.port=80"
+      - "traefik.backend=queue"
+      - "traefik.frontend.rule=Host:queue.mars.wizmacau.com"
+    volumes_from:
+      - app
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./config/nginx/upstream.conf:/etc/nginx/conf.d/upstream.conf
+      - ./config/nginx/app.conf:/etc/nginx/conf.d/app.conf
+      - ./data/logs:/var/log/nginx
+    links:
+      - app
+    networks:
+      - web
+  app:
+    image: containerize/symfony:7
+    volumes:
+      - ./composer:/root/.composer
+      - ~/.ssh:/root/.ssh
+      - ./config/php70/docker-php-ext-opcache.ini:/usr/local/etc/php/conf.d/docker-php-ext-opcache.ini
+      - ./config/php70/symfony.ini:/usr/local/etc/php/conf.d/symfony.ini
+      - ./config/php70/php-fpm.conf:/usr/local/etc/php-fpm.conf
+      - ~/Documents/git/sa-queue:/symfony
+    links:
+      - db
+      - redis
+    networks:
+      - web
+  db:
+    image: mysql
+    ports:
+      - 13306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: symfony
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+    networks:
+      - web
+    volumes:
+      - symfony-db:/var/lib/mysql
+  redis:
+    image: redis
+    networks:
+      - web
+networks:
+  web:
+    external:
+      name: proxy_webgateway
+volumes:
+  symfony-db:

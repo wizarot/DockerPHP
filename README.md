@@ -6,25 +6,25 @@
 
 当前项目的组成：
 
-- Ubuntu
 - Nginx 2.2
 - MySQL 5.6
-- PHP 5.6 
+- PHP 7.0
 - Redis 3.0
 - composer
-- Beanstalkd (可选)
+- Beanstalkd (可选,下个版本完成它)
 
 
 需要的工具：
 
-- docker
-- docker-compose
+- docker for mac
+- TODO:下载地址&安装
 
 1.下载项目
  
 	$ git clone git@github.com:wizarot/DockerPHP.git
+	$ git checkout tags/2.0.0
 
-2.根据需要配置文件 docker-composer.yml
+2.根据需要覆盖修改配置文件 docker-compose.override.yml -> docker-compose.override.yml
 	
 	app:
 	  build: debian
