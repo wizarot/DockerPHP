@@ -26,25 +26,26 @@
 
 2.根据需要覆盖修改配置文件 docker-compose.override.yml -> docker-compose.override.yml
 	
-	app:
-	  build: debian
-	  # tty: true
-	  volumes:
-	    - ./php-project-path:/apps #配置项目目录
+	例如:
+	docker-compose.override.yml
+
+	version: '2'
+	services:
+	  app:
+	    volumes:
+	      - ../php-project-path:/projects
+
     
-./data/ 目录是mysql数据库文件目录
-./logs/ 存放运行日志
+./data/mysql 目录是mysql数据库文件目录
+./data/logs  目录是日志目录....
+
 
 数据库用户名,密码 root root 这些都可以在 ./mysql目录下配置文件中找到
 
-可以使用多个项目,通过域名解析方式,例子在./nginx/php56/ 中
+可以使用多个项目,通过域名解析方式,例子在./nginx/php70/ 中
 可以根据需要增加php54或php70. 按照例子自己配置好了.有问题可以google查~ 基本都有解答
 
-3.构建docker镜像,如果不是很确定,麻烦先别乱改配置
-
-	$ docker-compose build
-
-4.启动docker组件
+3.启动docker组件
 	
 	$ docker-compose up -d
 
