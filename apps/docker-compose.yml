@@ -1,22 +1,22 @@
 version: '2'
 services:
-  nginx:
-    image: containerize/nginx
-    container_name: queue
-    labels:
-      - "traefik.port=80"
-      - "traefik.backend=queue"
-    volumes_from:
-      - app
-    volumes:
-      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./config/nginx/upstream.conf:/etc/nginx/conf.d/upstream.conf
-      - ./config/nginx/vhosts:/etc/nginx/conf.d
-      - ../data/logs:/var/log/nginx
-    links:
-      - app
-    networks:
-      - web
+  # nginx:
+  #   image: containerize/nginx
+  #   container_name: queue
+  #   labels:
+  #     - "traefik.port=80"
+  #     - "traefik.backend=queue"
+  #   volumes_from:
+  #     - app
+  #   volumes:
+  #     - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+  #     - ./config/nginx/upstream.conf:/etc/nginx/conf.d/upstream.conf
+  #     - ./config/nginx/vhosts:/etc/nginx/conf.d
+  #     - ../data/logs:/var/log/nginx
+  #   links:
+  #     - app
+  #   networks:
+  #     - web
   app:
     image: containerize/symfony:7
     volumes:

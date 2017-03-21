@@ -3,46 +3,70 @@ version: '2'
 # 可以复制一个文件到 docker-compose.override.yml 覆盖需要对应的选项
 services:
   # treafik代理,没有nginx那样的rewrite配置,但可以简单代理到端口
-  proxy:
-    image: traefik
-    command: --web --docker --docker.domain=l.wizmacau.com #公司的开发域名结尾,以这个结尾的都会被解析至本机
-    restart: always
-    networks:
-      - webgateway
+  nginx:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    # volumes_from:
+    #   - app
+    volumes:
+      - ./apps/config/nginx/nginx.conf:/etc/nginx/nginx.conf
+      # - ./apps/config/nginx/upstream.conf:/etc/nginx/conf.d/upstream.conf
+      - ./apps/config/nginx/vhosts:/etc/nginx/conf.d
+      - ./data/logs:/var/log/nginx
+      - /var/run/docker.sock:/tmp/docker.sock:ro
     ports:
       - "80:80"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /dev/null:/traefik.toml
+    links:
+      - admin
+      - whoami
+      - app
+      # - dash
+    networks:
+      - webgateway
   whoami:
     image: emilevauge/whoami
     networks:
       - webgateway
-    labels:
-      - "traefik.backend=whoami"
-      - "traefik.frontend.rule=Host:whoami.l.wizmacau.com" #使用traefik解析配置的whoami
+    container_name: whoami
+    environment:
+      - VIRTUAL_HOST=whoami.l.wizmacau.com
   admin:
     image: portainer/portainer
     command: -H unix:///var/run/docker.sock
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./data/portainer:/data
-    labels:
-      - "traefik.port=9000"
-      - "traefik.backend=admin"
-      - "traefik.frontend.rule=Host:admin.l.wizmacau.com"
     networks:
       - webgateway
-  dash:
-    image: svendowideit/ambassador
-    links: 
-      - proxy
-    labels:
-      - "traefik.port=8080"
-      - "traefik.backend=dash"
-      - "traefik.frontend.rule=Host:dash.l.wizmacau.com"
-    environment: 
-      - DASH_PORT_8080_TCP=tcp://proxy:8080
+  app:
+    image: containerize/symfony:7
+    volumes:
+      - ./composer:/root/.composer
+      - ~/.ssh:/root/.ssh
+      - ./apps/config/php70/docker-php-ext-opcache.ini:/usr/local/etc/php/conf.d/docker-php-ext-opcache.ini
+      - ./apps/config/php70/symfony.ini:/usr/local/etc/php/conf.d/symfony.ini
+      - ./apps/config/php70/php-fpm.conf:/usr/local/etc/php-fpm.conf
+      - ./php-project-path:/projects #通过docker-compose.override.yml 覆盖项目目录
+    links:
+      - db
+      - redis
+    networks:
+      - webgateway
+  db:
+    image: mysql
+    ports:
+      - 13306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: symfony
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+    networks:
+      - webgateway
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+  redis:
+    image: redis
     networks:
       - webgateway
 networks:
